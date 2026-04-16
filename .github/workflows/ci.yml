@@ -27,8 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
       - name: Run ansible-lint
-        uses: ansible/ansible-lint-action@main
+        run: ansible-lint .
 
   syntax-check:
     name: Syntax Check
@@ -39,6 +42,11 @@ jobs:
 
       - name: Install Ansible
         run: pip install ansible
+
+      - name: Create role symlink
+        run: >
+          mkdir -p tests/roles
+          && ln -s $(pwd) tests/roles/gthieleb.ssh_oom_protection
 
       - name: Syntax check
         run: ansible-playbook --syntax-check tests/test.yml
