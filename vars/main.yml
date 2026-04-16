@@ -1,0 +1,6 @@
+---
+# vars/main.yml - OS-specific variables
+# These are determined automatically based on ansible_facts['os_family']
+
+_ssh_oom_protection_service_name: >-
+  {{ 'ssh' if ansible_facts['os_family'] == 'Debian' else 'sshd' }}

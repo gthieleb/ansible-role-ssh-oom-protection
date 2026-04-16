@@ -1,0 +1,6 @@
+# Managed by Ansible - SSH keep-alive and hardening
+# Prevents SSH session drops during memory pressure
+
+ClientAliveInterval {{ ssh_oom_protection_client_alive_interval }}
+ClientAliveCountMax {{ ssh_oom_protection_client_alive_count_max }}
+TCPKeepAlive {{ 'yes' if ssh_oom_protection_tcp_keep_alive else 'no' }}

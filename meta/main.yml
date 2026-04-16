@@ -1,0 +1,31 @@
+galaxy_info:
+  author: gthieleb
+  description: Protect SSH from OOM kills via systemd cgroups, memory reservation, and systemd-oomd
+  company: none
+  license: MIT
+  min_ansible_version: "2.14"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+    - name: Debian
+      versions:
+        - bookworm
+    - name: EL
+      versions:
+        - "9"
+
+  galaxy_tags:
+    - ssh
+    - sshd
+    - oom
+    - systemd
+    - cgroups
+    - memory
+    - protection
+    - hardening
+    - linux
+    - system
+
+dependencies: []

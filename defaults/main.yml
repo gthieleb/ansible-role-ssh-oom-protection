@@ -1,0 +1,21 @@
+---
+# defaults/main.yml - Default variables for ssh_oom_protection role
+
+# Memory reserved exclusively for the SSH daemon (cannot be reclaimed by other processes)
+ssh_oom_protection_memory_min: "256M"
+
+# OOM score adjustment (-1000 = never kill, 0 = default)
+ssh_oom_protection_oom_score_adjust: -1000
+
+# SSH keep-alive settings
+ssh_oom_protection_client_alive_interval: 60
+ssh_oom_protection_client_alive_count_max: 3
+ssh_oom_protection_tcp_keep_alive: true
+
+# systemd-oomd configuration
+ssh_oom_protection_oomd_swap_limit: "90%"
+ssh_oom_protection_oomd_pressure_limit: "60%"
+ssh_oom_protection_oomd_pressure_duration: "30s"
+
+# Whether to install systemd-oomd (may already be present on some systems)
+ssh_oom_protection_install_oomd: true

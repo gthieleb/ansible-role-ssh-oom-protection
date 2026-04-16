@@ -1,0 +1,6 @@
+[Service]
+# Reserve memory exclusively for the SSH daemon - cannot be reclaimed by other processes
+MemoryMin={{ ssh_oom_protection_memory_min }}
+
+# Make SSH the very last process to be killed by the OOM killer
+OOMScoreAdjust={{ ssh_oom_protection_oom_score_adjust }}

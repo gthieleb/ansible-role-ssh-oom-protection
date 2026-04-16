@@ -1,0 +1,16 @@
+---
+- name: Reload systemd and restart SSH
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: "{{ _ssh_oom_protection_service_name }}"
+    state: restarted
+
+- name: Restart SSH
+  ansible.builtin.systemd:
+    name: "{{ _ssh_oom_protection_service_name }}"
+    state: restarted
+
+- name: Restart systemd-oomd
+  ansible.builtin.systemd:
+    name: systemd-oomd
+    state: restarted

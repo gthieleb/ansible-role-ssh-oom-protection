@@ -1,0 +1,91 @@
+---
+- name: Ensure SSH service override directory exists
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ _ssh_oom_protection_service_name }}.service.d"
+    state: directory
+    mode: "0755"
+
+- name: Deploy SSH memory protection override
+  ansible.builtin.template:
+    src: ssh-override.conf.j2
+    dest: "/etc/systemd/system/{{ _ssh_oom_protection_service_name }}.service.d/override.conf"
+    mode: "0644"
+  notify: Reload systemd and restart SSH
+
+- name: Ensure sshd_config drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    mode: "0755"
+
+- name: Ensure /run/sshd exists for sshd config validation
+  ansible.builtin.file:
+    path: /run/sshd
+    state: directory
+    mode: "0755"
+
+- name: Deploy SSH keep-alive hardening
+  ansible.builtin.template:
+    src: ssh-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    mode: "0644"
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: Restart SSH
+
+- name: Ensure systemd-oomd is installed
+  ansible.builtin.package:
+    name: systemd-oomd
+    state: present
+  when: ssh_oom_protection_install_oomd | bool
+
+- name: Deploy systemd-oomd configuration
+  ansible.builtin.template:
+    src: oomd.conf.j2
+    dest: /etc/systemd/oomd.conf
+    mode: "0644"
+  notify: Restart systemd-oomd
+
+- name: Enable and start systemd-oomd
+  ansible.builtin.systemd:
+    name: systemd-oomd
+    enabled: true
+    state: started
+
+- name: Flush handlers before verification
+  ansible.builtin.meta: flush_handlers
+
+# ============ VERIFY TASKS ============
+
+- name: Verify | Check SSH MemoryMin in cgroup
+  ansible.builtin.shell: >-
+    cat /sys/fs/cgroup/system.slice/{{ _ssh_oom_protection_service_name }}.service/memory.min
+  register: _ssh_oom_verify_memory_min
+  changed_when: false
+  failed_when: _ssh_oom_verify_memory_min.stdout | int == 0
+
+- name: Verify | Check SSH OOMScoreAdjust
+  ansible.builtin.shell: >-
+    cat /proc/$(systemctl show {{ _ssh_oom_protection_service_name }}.service -p MainPID --value)/oom_score_adj
+  register: _ssh_oom_verify_oom_score
+  changed_when: false
+  failed_when: _ssh_oom_verify_oom_score.stdout | int > -1000
+
+- name: Verify | Check systemd-oomd is active
+  ansible.builtin.systemd:
+    name: systemd-oomd
+  register: _ssh_oom_verify_oomd
+  failed_when: _ssh_oom_verify_oomd.status.ActiveState != "active"
+
+- name: Verify | Check SSH config applied
+  ansible.builtin.shell: >-
+    sshd -T | grep -E "clientaliveinterval|tcpkeepalive"
+  register: _ssh_oom_verify_ssh_config
+  changed_when: false
+
+- name: Verification results
+  ansible.builtin.debug:
+    msg:
+      - "SSH MemoryMin: {{ _ssh_oom_verify_memory_min.stdout }} bytes"
+      - "SSH OOM Score Adj: {{ _ssh_oom_verify_oom_score.stdout }}"
+      - "systemd-oomd: {{ _ssh_oom_verify_oomd.status.ActiveState }}"
+      - "SSH keep-alive: {{ _ssh_oom_verify_ssh_config.stdout_lines }}"

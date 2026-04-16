@@ -1,0 +1,7 @@
+---
+# tests/test.yml - Minimal test playbook for this role
+- name: Test ssh_oom_protection role
+  hosts: all
+  become: true
+  roles:
+    - gthieleb.ssh_oom_protection
