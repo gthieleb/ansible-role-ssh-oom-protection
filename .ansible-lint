@@ -1,0 +1,3 @@
+---
+skip_list:
+  - name[template]  # allow Jinja2 in task names

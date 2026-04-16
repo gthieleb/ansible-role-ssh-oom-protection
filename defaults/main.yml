@@ -1,7 +1,8 @@
 ---
 # defaults/main.yml - Default variables for ssh_oom_protection role
 
-# Memory reserved exclusively for the SSH daemon (cannot be reclaimed by other processes)
+# Memory reserved exclusively for the SSH daemon
+# (cannot be reclaimed by other processes)
 ssh_oom_protection_memory_min: "256M"
 
 # OOM score adjustment (-1000 = never kill, 0 = default)

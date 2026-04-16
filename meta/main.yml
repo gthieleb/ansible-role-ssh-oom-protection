@@ -1,6 +1,11 @@
+---
 galaxy_info:
+  role_name: ssh_oom_protection
+  namespace: gthieleb
   author: gthieleb
-  description: Protect SSH from OOM kills via systemd cgroups, memory reservation, and systemd-oomd
+  description: >-
+    Protect SSH from OOM kills via systemd cgroups,
+    memory reservation, and systemd-oomd
   company: none
   license: MIT
   min_ansible_version: "2.14"

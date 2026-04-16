@@ -8,7 +8,8 @@
 - name: Deploy SSH memory protection override
   ansible.builtin.template:
     src: ssh-override.conf.j2
-    dest: "/etc/systemd/system/{{ _ssh_oom_protection_service_name }}.service.d/override.conf"
+    dest: >-
+      /etc/systemd/system/{{ _ssh_oom_protection_service_name }}.service.d/override.conf
     mode: "0644"
   notify: Reload systemd and restart SSH
 
@@ -57,15 +58,18 @@
 # ============ VERIFY TASKS ============
 
 - name: Verify | Check SSH MemoryMin in cgroup
-  ansible.builtin.shell: >-
-    cat /sys/fs/cgroup/system.slice/{{ _ssh_oom_protection_service_name }}.service/memory.min
+  ansible.builtin.command: >-
+    cat /sys/fs/cgroup/system.slice/
+    {{ _ssh_oom_protection_service_name }}.service/memory.min
   register: _ssh_oom_verify_memory_min
   changed_when: false
   failed_when: _ssh_oom_verify_memory_min.stdout | int == 0
 
 - name: Verify | Check SSH OOMScoreAdjust
   ansible.builtin.shell: >-
-    cat /proc/$(systemctl show {{ _ssh_oom_protection_service_name }}.service -p MainPID --value)/oom_score_adj
+    cat /proc/$(systemctl show
+    {{ _ssh_oom_protection_service_name }}.service
+    -p MainPID --value)/oom_score_adj
   register: _ssh_oom_verify_oom_score
   changed_when: false
   failed_when: _ssh_oom_verify_oom_score.stdout | int > -1000
@@ -77,8 +81,9 @@
   failed_when: _ssh_oom_verify_oomd.status.ActiveState != "active"
 
 - name: Verify | Check SSH config applied
-  ansible.builtin.shell: >-
-    sshd -T | grep -E "clientaliveinterval|tcpkeepalive"
+  ansible.builtin.shell:
+    cmd: set -o pipefail && sshd -T | grep -E "clientaliveinterval|tcpkeepalive"
+    executable: /bin/bash
   register: _ssh_oom_verify_ssh_config
   changed_when: false
 
